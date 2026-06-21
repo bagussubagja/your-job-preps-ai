@@ -499,20 +499,18 @@ async function sendToGemini(userMessage, attachments = []) {
   const conv = conversations.find(c => c.id === activeConversationId);
   if (!conv) return '';
 
-  // Build conversation history for context
-  const contents = [];
+  // Build conversation array for backend
+  const conversation = [];
 
   const history = conv.messages.slice(-10); // Keep last 10 messages for context
 
   history.forEach(msg => {
-    const parts = [];
     if (msg.content) {
-      parts.push({ text: msg.content });
+      conversation.push({
+        role: msg.role === 'user' ? 'user' : 'model',
+        text: msg.content
+      });
     }
-    contents.push({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: parts
-    });
   });
 
   // Build current message parts
@@ -536,7 +534,7 @@ async function sendToGemini(userMessage, attachments = []) {
   // Add text
   currentParts.push({ text: userMessage });
 
-  contents.push({
+  conversation.push({
     role: 'user',
     parts: currentParts
   });
@@ -546,7 +544,7 @@ async function sendToGemini(userMessage, attachments = []) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: contents,
+        conversation: conversation,
         systemInstruction: SYSTEM_PROMPT
       })
     });
@@ -557,7 +555,7 @@ async function sendToGemini(userMessage, attachments = []) {
     }
 
     const data = await response.json();
-    return data.response;
+    return data.result;
   } catch (error) {
     console.error('API Error:', error);
     return `Maaf, terjadi kesalahan saat memproses permintaan. Silakan coba lagi.\n\nDetail: ${error.message}`;
