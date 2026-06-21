@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,66 +10,55 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Gemini API Configuration
+// Gemini AI Configuration
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const GEMINI_MODEL = 'gemini-2.5-flash';
 
-// API Endpoint - Chat
+const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+// API Endpoint - POST /api/chat
 app.post('/api/chat', async (req, res) => {
   try {
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: 'GEMINI_API_KEY is not configured in .env' });
     }
 
-    const { contents, systemInstruction } = req.body;
+    const { conversation, systemInstruction } = req.body;
 
-    const requestBody = {
-      system_instruction: {
-        parts: [{ text: systemInstruction }]
-      },
-      contents: contents,
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.9,
-        topK: 40,
-        maxOutputTokens: 2048
-      }
-    };
+    if (!Array.isArray(conversation)) {
+      throw new Error('Messages must be an array!');
+    }
 
-    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+    const contents = conversation.map(({ role, text, parts }) => ({
+      role,
+      parts: parts || [{ text }]
+    }));
+
+    const model = ai.getGenerativeModel({
+      model: GEMINI_MODEL,
+      systemInstruction: systemInstruction || ''
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(response.status).json({
-        error: errorData.error?.message || 'Gemini API request failed'
-      });
-    }
+    const response = await model.generateContent({
+      contents,
+      generationConfig: {
+        temperature: 0.9
+      }
+    });
 
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      return res.status(500).json({ error: 'No response generated from AI' });
-    }
-
-    res.json({ response: text });
-  } catch (error) {
-    console.error('Server Error:', error);
-    res.status(500).json({ error: 'Internal server error: ' + error.message });
+    res.status(200).json({ result: response.response.text() });
+  } catch (e) {
+    console.error('Server Error:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
 // Serve frontend
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log('Press Ctrl+C to stop');
 });
