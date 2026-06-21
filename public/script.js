@@ -2,8 +2,7 @@
 // YOUR JOB PREPARATION AI - Main Script
 // ============================================
 
-const API_KEY = 'AIzaSyBbbMxMDGELdnMECGOGMnanpBPUP4reevU';
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent';
+const API_URL = '/api/chat';
 
 // ============================================
 // PERSONA & RAG SYSTEM PROMPT
@@ -503,7 +502,6 @@ async function sendToGemini(userMessage, attachments = []) {
   // Build conversation history for context
   const contents = [];
 
-  // Add system instruction as first user message if it's the start
   const history = conv.messages.slice(-10); // Keep last 10 messages for context
 
   history.forEach(msg => {
@@ -543,39 +541,23 @@ async function sendToGemini(userMessage, attachments = []) {
     parts: currentParts
   });
 
-  const requestBody = {
-    system_instruction: {
-      parts: [{ text: SYSTEM_PROMPT }]
-    },
-    contents: contents,
-    generationConfig: {
-      temperature: 0.7,
-      topP: 0.9,
-      topK: 40,
-      maxOutputTokens: 2048
-    }
-  };
-
   try {
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify({
+        contents: contents,
+        systemInstruction: SYSTEM_PROMPT
+      })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'API request failed');
+      throw new Error(errorData.error || 'API request failed');
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      throw new Error('No response generated');
-    }
-
-    return text;
+    return data.response;
   } catch (error) {
     console.error('API Error:', error);
     return `Maaf, terjadi kesalahan saat memproses permintaan. Silakan coba lagi.\n\nDetail: ${error.message}`;
