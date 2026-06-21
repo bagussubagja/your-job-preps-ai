@@ -1,20 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gemini AI Chatbot</title>
+  <title>Your Job Preparation AI</title>
   <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <h1>Gemini AI Chatbot</h1>
-    <div id="chat-box" class="chat-box"></div>
-    <form id="chat-form">
-      <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off" required />
-      <button type="submit">Send</button>
-    </form>
+  <div class="app-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Conversations</h2>
+        <button class="btn-new-chat" id="btn-new-chat" title="New Chat">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="conversation-list" id="conversation-list"></div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="chat-header">
+        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Toggle Sidebar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="header-center">
+          <h1 class="app-title">Your Job Preparation AI</h1>
+        </div>
+        <button class="btn-theme-toggle" id="btn-theme-toggle" title="Toggle Theme">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </header>
+
+      <!-- Chat Messages -->
+      <div class="chat-container" id="chat-container">
+        <div class="chat-messages" id="chat-messages">
+          <!-- Welcome Screen -->
+          <div class="welcome-screen" id="welcome-screen">
+            <div class="welcome-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 7h-9m9 10H4M15 12H4"></path>
+                <rect x="2" y="4" width="20" height="16" rx="3"></rect>
+              </svg>
+            </div>
+            <h2>Siap mempersiapkan karir impianmu?</h2>
+            <p>Tanyakan apapun seputar persiapan kerja: CV, interview, portfolio, skill development, dan lainnya.</p>
+            <div class="suggestions" id="suggestions"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="attachment-preview" id="attachment-preview"></div>
+        <form class="input-form" id="chat-form">
+          <div class="input-actions">
+            <label class="btn-attach" title="Upload Image">
+              <input type="file" id="file-image" accept="image/*" hidden />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </label>
+            <label class="btn-attach" title="Upload PDF">
+              <input type="file" id="file-pdf" accept="application/pdf" hidden />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </label>
+          </div>
+          <div class="input-wrapper">
+            <textarea id="user-input" placeholder="Ketik pertanyaan seputar persiapan kerja..." rows="1"></textarea>
+          </div>
+          <button type="submit" class="btn-send" id="btn-send" title="Send">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </main>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
