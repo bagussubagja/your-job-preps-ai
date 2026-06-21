@@ -1,0 +1,17 @@
+{
+  "name": "your-job-preps-ai",
+  "version": "1.0.0",
+  "description": "Your Job Preparation AI - Chatbot powered by Gemini 2.5 Flash",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": ["chatbot", "gemini", "ai", "job-preparation"],
+  "author": "Bagus Subagja",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
